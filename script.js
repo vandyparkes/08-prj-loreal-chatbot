@@ -43,6 +43,7 @@ const NAME_FALSE_POSITIVES = new Set([
 const chatForm = document.getElementById("chatForm");
 const userInput = document.getElementById("userInput");
 const chatWindow = document.getElementById("chatWindow");
+const chatMessages = document.getElementById("chatMessages");
 const sendBtn = document.getElementById("sendBtn");
 const historyBtn = document.getElementById("historyBtn");
 const historyDialog = document.getElementById("historyDialog");
@@ -156,8 +157,21 @@ function initMessagesFromStorage(loaded) {
   ];
 }
 
+function scrollChatToBottom() {
+  const el = chatMessages || chatWindow;
+  el.scrollTop = el.scrollHeight;
+}
+
 function renderChat() {
-  chatWindow.innerHTML = "";
+  if (!chatMessages) {
+    chatWindow.innerHTML = "";
+    for (const m of messages.slice(2)) {
+      if (m.role === "user") appendMessage("user", m.content);
+      else if (m.role === "assistant") appendMessage("assistant", m.content);
+    }
+    return;
+  }
+  chatMessages.innerHTML = "";
   for (const m of messages.slice(2)) {
     if (m.role === "user") appendMessage("user", m.content);
     else if (m.role === "assistant") appendMessage("assistant", m.content);
@@ -212,11 +226,29 @@ function openHistoryDialog() {
 }
 
 function appendMessage(role, text) {
-  const div = document.createElement("div");
-  div.className = role === "user" ? "msg user" : "msg ai";
-  div.textContent = text;
-  chatWindow.appendChild(div);
-  chatWindow.scrollTop = chatWindow.scrollHeight;
+  const row = document.createElement("div");
+  row.className =
+    role === "user" ? "msg-row msg-row--user" : "msg-row msg-row--assistant";
+
+  const stack = document.createElement("div");
+  stack.className = "msg-stack";
+
+  const label = document.createElement("span");
+  label.className = "msg-sender";
+  label.textContent = role === "user" ? "You" : "Advisor";
+
+  const bubble = document.createElement("div");
+  bubble.className =
+    role === "user" ? "msg-bubble msg-bubble--user" : "msg-bubble msg-bubble--assistant";
+  bubble.textContent = text;
+
+  stack.appendChild(label);
+  stack.appendChild(bubble);
+  row.appendChild(stack);
+
+  const parent = chatMessages || chatWindow;
+  parent.appendChild(row);
+  scrollChatToBottom();
 }
 
 function setBusy(isBusy) {
@@ -225,13 +257,37 @@ function setBusy(isBusy) {
 }
 
 function showTypingIndicator() {
-  const div = document.createElement("div");
-  div.className = "msg ai";
-  div.dataset.typing = "true";
-  div.textContent = "…";
-  chatWindow.appendChild(div);
-  chatWindow.scrollTop = chatWindow.scrollHeight;
-  return div;
+  const row = document.createElement("div");
+  row.className = "msg-row msg-row--assistant";
+  row.dataset.typing = "true";
+
+  const stack = document.createElement("div");
+  stack.className = "msg-stack";
+
+  const label = document.createElement("span");
+  label.className = "msg-sender";
+  label.textContent = "Advisor";
+
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble msg-bubble--assistant msg-bubble--typing";
+  bubble.setAttribute("aria-label", "Advisor is typing");
+
+  const dots = document.createElement("span");
+  dots.className = "typing-dots";
+  dots.setAttribute("aria-hidden", "true");
+  dots.appendChild(document.createElement("span"));
+  dots.appendChild(document.createElement("span"));
+  dots.appendChild(document.createElement("span"));
+  bubble.appendChild(dots);
+
+  stack.appendChild(label);
+  stack.appendChild(bubble);
+  row.appendChild(stack);
+
+  const parent = chatMessages || chatWindow;
+  parent.appendChild(row);
+  scrollChatToBottom();
+  return row;
 }
 
 async function sendChatCompletion(workerUrl, apiKey) {
@@ -305,8 +361,8 @@ chatForm.addEventListener("submit", async (e) => {
     return;
   }
 
-  appendMessage("user", text);
   messages.push({ role: "user", content: text });
+  appendMessage("user", text);
 
   const learned = tryLearnNameFromUserText(text);
   if (learned && learned !== userName) {

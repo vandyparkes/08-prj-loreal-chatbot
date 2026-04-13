@@ -46,7 +46,15 @@
             </button>
           </div>
           <div id="chatWindow" class="chat-window">
-            <!-- messages will be appended here via JS -->
+            <div
+              id="chatMessages"
+              class="chat-messages"
+              role="log"
+              aria-live="polite"
+              aria-relevant="additions"
+            >
+              <!-- user + assistant bubbles appended here via JS -->
+            </div>
           </div>
 
           <form id="chatForm" class="chat-form">
