@@ -1,0 +1,11 @@
+{
+  "name": "08-prj-loreal-chatbot",
+  "private": true,
+  "scripts": {
+    "worker:deploy": "wrangler deploy",
+    "worker:dev": "wrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "^3.99.0"
+  }
+}

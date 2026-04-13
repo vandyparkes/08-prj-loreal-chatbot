@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chat Assistant</title>
+    <meta name="author" content="Vandy Parkes" />
+    <title>L'Oréal — Smart Product Advisor</title>
     <link
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet"
@@ -19,7 +20,16 @@
     <div class="page-wrapper">
       <!------- Header / Branding ------->
       <header class="site-header">
-        <h1 class="site-title">Smart Product Advisor</h1>
+        <div class="brand-lockup">
+          <img
+            class="brand-logo"
+            src="assets/loreal-logo.svg"
+            width="200"
+            height="35"
+            alt="L'Oréal"
+          />
+          <h1 class="site-tagline">Smart Product Advisor</h1>
+        </div>
       </header>
 
       <!------- Chat Area ------->
@@ -49,7 +59,7 @@
 
       <!------- Footer Links ------->
       <footer class="site-footer">
-        <p>&copy; 2025 Company Name. All rights reserved.</p>
+        <p>&copy; 2026 L'Oréal. Student project.</p>
         <nav>
           <!-- These URLs are placeholders -->
           <a href="#">Privacy Policy</a>
@@ -59,7 +69,7 @@
       </footer>
     </div>
 
-    <!-- secrets.js can be removed when using Cloudflare Workers for API requests -->
+    <!-- secrets.js: set window.CHAT_API_URL to your Worker URL, or window.OPENAI_API_KEY for local dev only -->
     <script src="secrets.js"></script>
     <script src="script.js"></script>
   </body>

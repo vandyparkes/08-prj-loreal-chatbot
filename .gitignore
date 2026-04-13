@@ -1,2 +1,5 @@
 # Secrets file containing API keys
 secrets.js
+
+# Local Wrangler secrets (do not commit)
+.dev.vars

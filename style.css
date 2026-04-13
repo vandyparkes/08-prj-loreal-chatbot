@@ -1,3 +1,17 @@
+/* —— L'Oréal corporate palette: black, white, vibrant red (FutureBrand identity) —— */
+:root {
+  --loreal-black: #0d0d0d;
+  --loreal-charcoal: #3a3a3a;
+  --loreal-muted: #6b6b6b;
+  --loreal-red: #e60012;
+  --loreal-red-hover: #b8000e;
+  --loreal-red-focus: rgba(230, 0, 18, 0.22);
+  --loreal-surface: #fafafa;
+  --loreal-white: #ffffff;
+  --loreal-border: #e8e8e8;
+  --loreal-shadow: rgba(13, 13, 13, 0.06);
+}
+
 /* —— basic reset —— */
 * {
   box-sizing: border-box;
@@ -8,9 +22,16 @@
 /* —— body + fonts —— */
 body {
   font-family: "Montserrat", Arial, Helvetica, sans-serif;
-  color: #333;
+  color: var(--loreal-charcoal);
   display: flex;
   justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(
+    180deg,
+    var(--loreal-surface) 0%,
+    var(--loreal-white) 50%,
+    var(--loreal-surface) 100%
+  );
 }
 
 .page-wrapper {
@@ -18,16 +39,35 @@ body {
   max-width: 900px;
 }
 
-/* header */
+/* header / brand */
 .site-header {
   text-align: center;
-  padding-top: 50px;
+  padding: 40px 20px 24px;
+  border-bottom: 1px solid var(--loreal-border);
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 8px 28px var(--loreal-shadow);
+  background: var(--loreal-white);
 }
 
-.site-title {
-  font-size: 22px;
+.brand-lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-logo {
+  display: block;
+  height: auto;
+  width: min(220px, 72vw);
+}
+
+.site-tagline {
+  font-size: 15px;
   font-weight: 500;
-  margin-bottom: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--loreal-muted);
 }
 
 /* chat window */
@@ -37,27 +77,31 @@ body {
 
 .chat-window {
   height: 360px;
-  border: 1px solid #000;
+  border: 1px solid var(--loreal-border);
+  border-top: 3px solid var(--loreal-red);
+  border-radius: 4px;
   padding: 20px;
   font-size: 18px;
-  line-height: 1.5;
+  line-height: 1.55;
   overflow-y: auto;
-  background: #fafafa;
+  background: var(--loreal-white);
+  box-shadow: 0 8px 28px var(--loreal-shadow);
   white-space: pre-line;
 }
 
 /* messages */
 .msg {
   margin-bottom: 14px;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .msg.user {
-  color: #000;
+  color: var(--loreal-black);
+  font-weight: 500;
 }
 
 .msg.ai {
-  color: #666666;
+  color: var(--loreal-muted);
 }
 
 /* input row */
@@ -69,21 +113,32 @@ body {
 
 .chat-form input {
   flex: 1;
-  padding: 12px;
-  border: 1px solid #ccc;
+  padding: 12px 14px;
+  border: 1px solid var(--loreal-border);
+  border-radius: 4px;
   font-size: 18px;
+  font-family: inherit;
+  color: var(--loreal-charcoal);
+  background: var(--loreal-white);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.chat-form input::placeholder {
+  color: #9a9a9a;
 }
 
 .chat-form input:focus {
-  outline: 2px solid #000;
-  outline-offset: 2px;
+  outline: none;
+  border-color: var(--loreal-red);
+  box-shadow: 0 0 0 3px var(--loreal-red-focus);
 }
 
 .chat-form button {
   font-size: 18px;
-  background: #000;
-  color: #fff;
+  background: var(--loreal-red);
+  color: var(--loreal-white);
   border: none;
+  border-radius: 4px;
   padding: 12px;
   width: 48px;
   height: 48px;
@@ -91,7 +146,7 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background 0.25s, transform 0.15s;
 }
 
 .chat-form button .material-icons {
@@ -99,12 +154,16 @@ body {
 }
 
 .chat-form button:hover {
-  background: #666666;
+  background: var(--loreal-red-hover);
 }
 
 .chat-form button:focus {
-  outline: 2px solid #000;
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: 0 0 0 3px var(--loreal-red-focus);
+}
+
+.chat-form button:active {
+  transform: scale(0.97);
 }
 
 /* visually hidden */
@@ -125,7 +184,7 @@ body {
   margin: 60px 0 40px;
   text-align: center;
   font-size: 14px;
-  color: #666;
+  color: var(--loreal-muted);
 }
 
 .site-footer nav {
@@ -134,10 +193,13 @@ body {
 
 .site-footer a {
   margin: 0 8px;
-  color: #000;
+  color: var(--loreal-black);
   text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
 }
 
 .site-footer a:hover {
-  color: #666666;
+  color: var(--loreal-red);
+  border-bottom-color: var(--loreal-red);
 }
