@@ -35,6 +35,16 @@
       <!------- Chat Area ------->
       <main>
         <section class="chatbox">
+          <div class="chat-toolbar">
+            <button
+              type="button"
+              id="historyBtn"
+              class="btn-history"
+            >
+              <span class="material-icons" aria-hidden="true">history</span>
+              Conversation history
+            </button>
+          </div>
           <div id="chatWindow" class="chat-window">
             <!-- messages will be appended here via JS -->
           </div>
@@ -56,6 +66,29 @@
           </form>
         </section>
       </main>
+
+      <dialog
+        id="historyDialog"
+        class="history-dialog"
+        aria-labelledby="historyDialogTitle"
+      >
+        <div class="history-dialog-panel">
+          <div class="history-dialog-header">
+            <h2 id="historyDialogTitle" class="history-dialog-title">
+              Conversation history
+            </h2>
+            <button
+              type="button"
+              id="historyCloseBtn"
+              class="history-dialog-close"
+              aria-label="Close conversation history"
+            >
+              <span class="material-icons" aria-hidden="true">close</span>
+            </button>
+          </div>
+          <div id="historyDialogBody" class="history-dialog-body"></div>
+        </div>
+      </dialog>
 
       <!------- Footer Links ------->
       <footer class="site-footer">

@@ -75,6 +75,174 @@ body {
   margin: 40px 0;
 }
 
+.chat-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.btn-history {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--loreal-charcoal);
+  background: var(--loreal-white);
+  border: 1px solid var(--loreal-border);
+  border-radius: 4px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.btn-history .material-icons {
+  font-size: 20px;
+  color: var(--loreal-muted);
+}
+
+.btn-history:hover {
+  border-color: var(--loreal-red);
+  color: var(--loreal-red);
+}
+
+.btn-history:hover .material-icons {
+  color: var(--loreal-red);
+}
+
+.btn-history:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--loreal-red-focus);
+}
+
+/* conversation history modal */
+.history-dialog {
+  padding: 0;
+  border: none;
+  max-width: min(540px, calc(100vw - 24px));
+  width: 100%;
+  background: transparent;
+}
+
+.history-dialog::backdrop {
+  background: rgba(13, 13, 13, 0.45);
+}
+
+.history-dialog-panel {
+  background: var(--loreal-white);
+  border: 1px solid var(--loreal-border);
+  border-radius: 8px;
+  box-shadow: 0 16px 48px rgba(13, 13, 13, 0.18);
+  max-height: min(520px, 85vh);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.history-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--loreal-border);
+  flex-shrink: 0;
+}
+
+.history-dialog-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--loreal-black);
+}
+
+.history-dialog-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--loreal-muted);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.history-dialog-close .material-icons {
+  font-size: 22px;
+}
+
+.history-dialog-close:hover {
+  background: var(--loreal-surface);
+  color: var(--loreal-black);
+}
+
+.history-dialog-close:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--loreal-red-focus);
+}
+
+.history-dialog-body {
+  padding: 16px 18px;
+  overflow-y: auto;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--loreal-charcoal);
+}
+
+.history-meta {
+  font-size: 14px;
+  color: var(--loreal-muted);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--loreal-border);
+}
+
+.history-meta strong {
+  color: var(--loreal-black);
+  font-weight: 600;
+}
+
+.history-empty {
+  color: var(--loreal-muted);
+  text-align: center;
+  padding: 24px 8px;
+}
+
+.history-turn {
+  margin-bottom: 16px;
+}
+
+.history-turn:last-child {
+  margin-bottom: 0;
+}
+
+.history-turn-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--loreal-red);
+  margin-bottom: 6px;
+}
+
+.history-turn--assistant .history-turn-label {
+  color: var(--loreal-muted);
+}
+
+.history-turn-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .chat-window {
   height: 360px;
   border: 1px solid var(--loreal-border);

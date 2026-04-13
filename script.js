@@ -5,22 +5,211 @@ Scope: Answer only questions about L'Oréal (and L'Oréal Group brands), product
 
 Out of scope: If the user asks about anything else—general knowledge, other companies, politics, medical diagnosis, or unrelated topics—reply briefly that you only help with L'Oréal beauty topics, then invite them to ask about products or routines.
 
+Conversation memory: You receive the full thread. Use earlier turns to interpret follow-ups (e.g. "that serum", "the same concern", "what you said before"). If the user shared their name, use it naturally when it fits; do not overuse it.
+
 Style: Clear, friendly, concise. Do not claim to be an official L'Oréal representative. If you are unsure about a specific product name, shade, price, or availability, say so and suggest they check packaging, a store, or L'Oréal's official sites for the latest information.`;
 
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 const CHAT_MODEL = "gpt-4o-mini";
+
+const STORAGE_KEY = "lorealAdvisorSession";
+/** Max user + assistant messages kept when calling the API (avoids huge payloads) */
+const MAX_TRANSCRIPT_MESSAGES = 40;
+
+const DEFAULT_GREETING = "👋 Hello! How can I help you today?";
+
+const NAME_FALSE_POSITIVES = new Set([
+  "looking",
+  "trying",
+  "wondering",
+  "going",
+  "here",
+  "just",
+  "not",
+  "sure",
+  "asking",
+  "interested",
+  "using",
+  "shopping",
+  "searching",
+  "curious",
+  "from",
+  "the",
+  "a",
+  "an",
+]);
 
 /* DOM */
 const chatForm = document.getElementById("chatForm");
 const userInput = document.getElementById("userInput");
 const chatWindow = document.getElementById("chatWindow");
 const sendBtn = document.getElementById("sendBtn");
+const historyBtn = document.getElementById("historyBtn");
+const historyDialog = document.getElementById("historyDialog");
+const historyDialogBody = document.getElementById("historyDialogBody");
+const historyCloseBtn = document.getElementById("historyCloseBtn");
 
-/** Full message list sent to the API (includes system + history) */
-const messages = [
-  { role: "system", content: LOREAL_SYSTEM_PROMPT },
-  { role: "assistant", content: "👋 Hello! How can I help you today?" },
-];
+let userName = null;
+/** [base system, memory system, ...user/assistant transcript] */
+let messages = [];
+
+function buildMemorySystemContent(name) {
+  if (name) {
+    return `Session memory: The user's name is ${name}. Address them by name when it feels natural (not every sentence). Use prior messages in this chat—including products or concerns they already mentioned—when answering new questions or follow-ups.`;
+  }
+  return `Session memory: The user has not shared their name yet. If they introduce themselves, treat that as their name for the rest of the chat. Use prior messages in this chat when they refer to something without repeating details.`;
+}
+
+function tryLearnNameFromUserText(text) {
+  const t = text.trim();
+  let m = t.match(
+    /\bmy name is\s+([A-Za-z][A-Za-z'.-]*(?:\s+[A-Za-z][A-Za-z'.-]*)?)\b/i
+  );
+  if (m) return normalizeDisplayName(m[1]);
+
+  m = t.match(
+    /\bcall me\s+([A-Za-z][A-Za-z'.-]*(?:\s+[A-Za-z][A-Za-z'.-]*)?)\b/i
+  );
+  if (m) return normalizeDisplayName(m[1]);
+
+  m = t.match(/^(?:i am|i'm)\s+([A-Za-z][A-Za-z'.-]*)\b/i);
+  if (m) {
+    const word = m[1].toLowerCase();
+    if (NAME_FALSE_POSITIVES.has(word)) return null;
+    return normalizeDisplayName(m[1]);
+  }
+  return null;
+}
+
+function normalizeDisplayName(s) {
+  const t = s.trim().replace(/\s+/g, " ");
+  if (!t) return null;
+  return t
+    .split(" ")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ");
+}
+
+function syncMemorySystemMessage() {
+  if (messages.length < 2) return;
+  messages[1] = {
+    role: "system",
+    content: buildMemorySystemContent(userName),
+  };
+}
+
+function messagesForApi() {
+  const head = messages.slice(0, 2);
+  const body = messages.slice(2);
+  const tail =
+    body.length > MAX_TRANSCRIPT_MESSAGES
+      ? body.slice(-MAX_TRANSCRIPT_MESSAGES)
+      : body;
+  return [...head, ...tail];
+}
+
+function persistSession() {
+  try {
+    const transcript = messages.slice(2).filter(
+      (m) => m.role === "user" || m.role === "assistant"
+    );
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ v: 1, userName, transcript })
+    );
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
+
+function loadSession() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (data.v !== 1 || !Array.isArray(data.transcript)) return null;
+    const transcript = data.transcript.filter(
+      (m) =>
+        m &&
+        (m.role === "user" || m.role === "assistant") &&
+        typeof m.content === "string"
+    );
+    return {
+      userName: typeof data.userName === "string" ? data.userName : null,
+      transcript,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function initMessagesFromStorage(loaded) {
+  userName = loaded?.userName ?? null;
+  const transcript =
+    loaded?.transcript?.length > 0
+      ? loaded.transcript
+      : [{ role: "assistant", content: DEFAULT_GREETING }];
+  messages = [
+    { role: "system", content: LOREAL_SYSTEM_PROMPT },
+    { role: "system", content: buildMemorySystemContent(userName) },
+    ...transcript,
+  ];
+}
+
+function renderChat() {
+  chatWindow.innerHTML = "";
+  for (const m of messages.slice(2)) {
+    if (m.role === "user") appendMessage("user", m.content);
+    else if (m.role === "assistant") appendMessage("assistant", m.content);
+  }
+}
+
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function getTranscriptForHistory() {
+  return messages.slice(2).filter(
+    (m) => m.role === "user" || m.role === "assistant"
+  );
+}
+
+function renderHistoryPanel() {
+  if (!historyDialogBody) return;
+  const parts = [];
+  if (userName) {
+    parts.push(
+      `<p class="history-meta">Name on file: <strong>${escapeHtml(
+        userName
+      )}</strong></p>`
+    );
+  }
+  const transcript = getTranscriptForHistory();
+  if (transcript.length === 0) {
+    parts.push('<p class="history-empty">No messages yet.</p>');
+  } else {
+    for (const m of transcript) {
+      const label = m.role === "user" ? "You" : "Advisor";
+      const roleClass =
+        m.role === "user" ? "history-turn--user" : "history-turn--assistant";
+      parts.push(
+        `<div class="history-turn ${roleClass}"><span class="history-turn-label">${label}</span><div class="history-turn-text">${escapeHtml(
+          m.content
+        )}</div></div>`
+      );
+    }
+  }
+  historyDialogBody.innerHTML = parts.join("");
+}
+
+function openHistoryDialog() {
+  renderHistoryPanel();
+  if (historyDialog && typeof historyDialog.showModal === "function") {
+    historyDialog.showModal();
+  }
+}
 
 function appendMessage(role, text) {
   const div = document.createElement("div");
@@ -45,15 +234,11 @@ function showTypingIndicator() {
   return div;
 }
 
-function renderInitialChat() {
-  chatWindow.innerHTML = "";
-  appendMessage("assistant", "👋 Hello! How can I help you today?");
-}
-
 async function sendChatCompletion(workerUrl, apiKey) {
   const typingEl = showTypingIndicator();
   setBusy(true);
   const useWorker = workerUrl.length > 0;
+  const payloadMessages = messagesForApi();
 
   try {
     const res = await fetch(useWorker ? workerUrl : OPENAI_URL, {
@@ -63,7 +248,9 @@ async function sendChatCompletion(workerUrl, apiKey) {
         ...(useWorker ? {} : { Authorization: `Bearer ${apiKey}` }),
       },
       body: JSON.stringify(
-        useWorker ? { messages } : { model: CHAT_MODEL, messages }
+        useWorker
+          ? { messages: payloadMessages }
+          : { model: CHAT_MODEL, messages: payloadMessages }
       ),
     });
 
@@ -83,6 +270,7 @@ async function sendChatCompletion(workerUrl, apiKey) {
 
     messages.push({ role: "assistant", content: reply });
     appendMessage("assistant", reply);
+    persistSession();
   } catch (err) {
     const msg =
       err instanceof Error
@@ -91,6 +279,7 @@ async function sendChatCompletion(workerUrl, apiKey) {
     const shown = `Sorry — ${msg}`;
     messages.push({ role: "assistant", content: shown });
     appendMessage("assistant", shown);
+    persistSession();
   } finally {
     typingEl.remove();
     setBusy(false);
@@ -118,9 +307,24 @@ chatForm.addEventListener("submit", async (e) => {
 
   appendMessage("user", text);
   messages.push({ role: "user", content: text });
+
+  const learned = tryLearnNameFromUserText(text);
+  if (learned && learned !== userName) {
+    userName = learned;
+    syncMemorySystemMessage();
+  }
+  persistSession();
+
   userInput.value = "";
 
   await sendChatCompletion(workerUrl, apiKey);
 });
 
-renderInitialChat();
+if (historyBtn && historyDialog && historyCloseBtn) {
+  historyBtn.addEventListener("click", openHistoryDialog);
+  historyCloseBtn.addEventListener("click", () => historyDialog.close());
+}
+
+const loaded = loadSession();
+initMessagesFromStorage(loaded);
+renderChat();
