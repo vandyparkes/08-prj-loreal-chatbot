@@ -26,7 +26,8 @@ const MAX_JSON_BYTES = 400_000;
 const ALLOWED_ROLES = new Set(["system", "user", "assistant"]);
 
 function parseAllowedOrigins(env) {
-  const raw = (env.ALLOWED_ORIGINS || "").trim();
+  const safe = env && typeof env === "object" ? env : {};
+  const raw = (safe.ALLOWED_ORIGINS || "").trim();
   if (!raw) return null;
   return raw.split(",").map((s) => s.trim()).filter(Boolean);
 }
@@ -87,7 +88,8 @@ function readContentLength(request) {
 }
 
 function validateBearer(request, env) {
-  const expected = env.WORKER_BEARER_TOKEN;
+  const safe = env && typeof env === "object" ? env : {};
+  const expected = safe.WORKER_BEARER_TOKEN;
   if (!expected) return true;
   const auth = request.headers.get("Authorization") || "";
   const m = auth.match(/^Bearer\s+(.+)$/i);
@@ -124,9 +126,9 @@ function normalizeMessages(raw) {
   return { messages: out };
 }
 
-export default {
-  async fetch(request, env) {
-    const cors = corsHeaders(request, env);
+async function handleRequest(request, env) {
+    const e = env && typeof env === "object" ? env : {};
+    const cors = corsHeaders(request, e);
 
     if (request.method === "OPTIONS") {
       if (!cors.ok) {
@@ -155,7 +157,7 @@ export default {
       return jsonResponse(cors, 403, { error: { message: "Origin not allowed" } });
     }
 
-    if (!validateBearer(request, env)) {
+    if (!validateBearer(request, e)) {
       return jsonResponse(cors, 401, { error: { message: "Unauthorized" } });
     }
 
@@ -169,7 +171,7 @@ export default {
       return jsonResponse(cors, 413, { error: { message: "Request body too large" } });
     }
 
-    const apiKey = env.OPENAI_API_KEY;
+    const apiKey = e.OPENAI_API_KEY;
     if (!apiKey) {
       return jsonResponse(cors, 500, {
         error: {
@@ -232,5 +234,27 @@ export default {
         "X-Content-Type-Options": "nosniff",
       },
     });
+}
+
+export default {
+  async fetch(request, env, _ctx) {
+    try {
+      return await handleRequest(request, env);
+    } catch (err) {
+      console.error("loreal-chatbot-api worker error:", err);
+      return new Response(
+        JSON.stringify({
+          ok: false,
+          error: { message: "Worker internal error" },
+        }),
+        {
+          status: 500,
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            "X-Content-Type-Options": "nosniff",
+          },
+        }
+      );
+    }
   },
 };

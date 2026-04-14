@@ -8,5 +8,5 @@
 // CHAT_API_URL must be THIS project’s Cloudflare Worker (OpenAI chat completions proxy):
 //   RESOURCE_cloudflare-worker.js — see wrangler.toml. Deploy: npm run worker:deploy
 // Then paste the workers.dev URL Wrangler prints (not another Worker on workers.dev).
-window.CHAT_API_URL = "";
+window.CHAT_API_URL = "https://silent-base-b242.vparkes.workers.dev";
 window.OPENAI_API_KEY = "";
