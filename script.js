@@ -281,6 +281,24 @@ function getChatApiConfig() {
   return { workerUrl, apiKey };
 }
 
+/** Browsers usually surface blocked CORS / offline as TypeError "Failed to fetch". */
+function describeFetchFailure(err) {
+  const m = err instanceof Error ? err.message : String(err);
+  const looksLikeNetworkBlock =
+    m === "Failed to fetch" ||
+    m === "Load failed" ||
+    /^NetworkError when attempting to fetch/i.test(m);
+  if (looksLikeNetworkBlock) {
+    return (
+      "Could not reach the API (often CORS or a wrong URL). Use the Worker URL from " +
+      "`npm run worker:deploy` in config.js as CHAT_API_URL, add your site origin to " +
+      "ALLOWED_ORIGINS on the Worker if you set it, serve the page over http(s) " +
+      "(not file://), and check that you are online."
+    );
+  }
+  return m;
+}
+
 async function fetchOpenAICompletion(workerUrl, apiKey, payloadMessages) {
   const useWorker = workerUrl.length > 0;
   const res = await fetch(useWorker ? workerUrl : OPENAI_URL, {
@@ -311,7 +329,17 @@ async function fetchOpenAICompletion(workerUrl, apiKey, payloadMessages) {
 
   const reply = data.choices?.[0]?.message?.content?.trim();
   if (!reply) {
-    throw new Error("No reply from the model.");
+    if (Array.isArray(data)) {
+      throw new Error(
+        "CHAT_API_URL points to a different app (the server returned a JSON array, not OpenAI chat completions). " +
+          "Deploy this repo’s Worker (`npm run worker:deploy`, RESOURCE_cloudflare-worker.js) and set CHAT_API_URL to that URL."
+      );
+    }
+    throw new Error(
+      "CHAT_API_URL must point to this project’s Cloudflare Worker (OpenAI chat completions proxy), not another app. " +
+        "Run `npm run worker:deploy`, copy the printed workers.dev URL into config.js, and confirm a browser GET to that URL shows " +
+        '`"service":"loreal-chatbot-api"`.'
+    );
   }
   return reply;
 }
@@ -367,7 +395,7 @@ async function sendChatCompletion(workerUrl, apiKey) {
   } catch (err) {
     const msg =
       err instanceof Error
-        ? err.message
+        ? describeFetchFailure(err)
         : "Something went wrong. If this is a browser CORS block, use a small server proxy instead of calling the API directly from the page.";
     const shown = `Sorry — ${msg}`;
     messages.push({ role: "assistant", content: shown });
@@ -426,7 +454,7 @@ async function generateRoutineWithOpenAI(requestText) {
   } catch (err) {
     const msg =
       err instanceof Error
-        ? err.message
+        ? describeFetchFailure(err)
         : "Something went wrong. If this is a browser CORS block, use a small server proxy instead of calling the API directly from the page.";
     const shown = `Sorry — ${msg}`;
     messages.push({ role: "assistant", content: shown });

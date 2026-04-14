@@ -4,5 +4,9 @@
 // Your OpenAI key stays only in Cloudflare; visitors never need a key.
 //
 // Optional: for local testing without a Worker, set OPENAI_API_KEY here — do not commit real keys.
-window.CHAT_API_URL = "https://snowy-water-5575.vparkes.workers.dev";
+//
+// CHAT_API_URL must be THIS project’s Cloudflare Worker (OpenAI chat completions proxy):
+//   RESOURCE_cloudflare-worker.js — see wrangler.toml. Deploy: npm run worker:deploy
+// Then paste the workers.dev URL Wrangler prints (not another Worker on workers.dev).
+window.CHAT_API_URL = "";
 window.OPENAI_API_KEY = "";
