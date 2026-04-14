@@ -16,7 +16,7 @@
 const OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions";
 const CHAT_MODEL = "gpt-4o-mini";
 const CHAT_TEMPERATURE = 0.6;
-const MAX_COMPLETION_TOKENS = 1024;
+const MAX_COMPLETION_TOKENS = 2048;
 
 /** Must cover client system messages + transcript cap (see script.js MAX_TRANSCRIPT_MESSAGES). */
 const MAX_MESSAGES = 48;

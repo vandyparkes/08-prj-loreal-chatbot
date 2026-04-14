@@ -45,6 +45,32 @@
               Conversation history
             </button>
           </div>
+
+          <div class="routine-panel" aria-labelledby="routinePanelTitle">
+            <h2 id="routinePanelTitle" class="routine-panel-title">
+              Generate a routine
+            </h2>
+            <p class="routine-panel-hint">
+              Describe your skin or hair type, concerns, and goals — we’ll draft a
+              L’Oréal–aligned step-by-step routine with OpenAI.
+            </p>
+            <label for="routineInput" class="routine-label"
+              >Your request</label
+            >
+            <textarea
+              id="routineInput"
+              class="routine-input"
+              name="routineInput"
+              rows="4"
+              maxlength="2000"
+              placeholder="Example: Combination skin, occasional breakouts, want a simple morning routine with SPF under makeup…"
+            ></textarea>
+            <button type="button" id="routineGenerateBtn" class="btn-routine">
+              <span class="material-icons" aria-hidden="true">auto_awesome</span>
+              Generate routine
+            </button>
+          </div>
+
           <div id="chatWindow" class="chat-window">
             <div
               id="chatMessages"

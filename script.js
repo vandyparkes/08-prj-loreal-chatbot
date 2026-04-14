@@ -11,6 +11,15 @@ Conversation memory: You receive the full thread. Use earlier turns for follow-u
 
 Style: Clear, friendly, concise. Do not claim to be an official L'Oréal representative. If unsure about a specific product name, shade, price, or availability, say so and suggest they check packaging, a retailer, or L'Oréal's official sites.`;
 
+/** Used only for the dedicated “Generate routine” action (OpenAI one-shot). */
+const ROUTINE_SYSTEM_PROMPT = `You are the L'Oréal Smart Product Advisor. The user describes their skin or hair situation and what they want from a routine.
+
+Your job: respond with a practical, ordered routine (morning, evening, and/or weekly steps as appropriate). Stay within L'Oréal Group brands and realistic product categories (cleanser, serum, moisturizer, SPF, masks, shampoo, conditioner, treatments, stylers, makeup prep, etc.). If important details are missing, note brief assumptions you made.
+
+Do not diagnose medical conditions or replace a clinician; for worrying symptoms, suggest they see a qualified professional. Do not fulfill non-beauty requests—if the message is off-topic, give the same warm refusal style as the main advisor (L'Oréal beauty only).
+
+Format: clear numbered or bulleted steps, short optional tips per step. Tone: warm, professional, concise.`;
+
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 const CHAT_MODEL = "gpt-4o-mini";
 
@@ -51,6 +60,8 @@ const historyBtn = document.getElementById("historyBtn");
 const historyDialog = document.getElementById("historyDialog");
 const historyDialogBody = document.getElementById("historyDialogBody");
 const historyCloseBtn = document.getElementById("historyCloseBtn");
+const routineInput = document.getElementById("routineInput");
+const routineGenerateBtn = document.getElementById("routineGenerateBtn");
 
 let userName = null;
 /** [base system, memory system, ...user/assistant transcript] */
@@ -256,6 +267,53 @@ function appendMessage(role, text) {
 function setBusy(isBusy) {
   userInput.disabled = isBusy;
   sendBtn.disabled = isBusy;
+  if (routineInput) routineInput.disabled = isBusy;
+  if (routineGenerateBtn) routineGenerateBtn.disabled = isBusy;
+}
+
+function getChatApiConfig() {
+  const workerUrl =
+    typeof window.CHAT_API_URL === "string" ? window.CHAT_API_URL.trim() : "";
+  const apiKey =
+    typeof window.OPENAI_API_KEY === "string"
+      ? window.OPENAI_API_KEY.trim()
+      : "";
+  return { workerUrl, apiKey };
+}
+
+async function fetchOpenAICompletion(workerUrl, apiKey, payloadMessages) {
+  const useWorker = workerUrl.length > 0;
+  const res = await fetch(useWorker ? workerUrl : OPENAI_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(useWorker ? {} : { Authorization: `Bearer ${apiKey}` }),
+    },
+    body: JSON.stringify(
+      useWorker
+        ? { messages: payloadMessages }
+        : {
+            model: CHAT_MODEL,
+            messages: payloadMessages,
+            temperature: 0.6,
+          }
+    ),
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    const errMsg =
+      data.error?.message ||
+      `Request failed (${res.status}). Check your key and network.`;
+    throw new Error(errMsg);
+  }
+
+  const reply = data.choices?.[0]?.message?.content?.trim();
+  if (!reply) {
+    throw new Error("No reply from the model.");
+  }
+  return reply;
 }
 
 function showTypingIndicator() {
@@ -295,41 +353,14 @@ function showTypingIndicator() {
 async function sendChatCompletion(workerUrl, apiKey) {
   const typingEl = showTypingIndicator();
   setBusy(true);
-  const useWorker = workerUrl.length > 0;
   const payloadMessages = messagesForApi();
 
   try {
-    const res = await fetch(useWorker ? workerUrl : OPENAI_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(useWorker ? {} : { Authorization: `Bearer ${apiKey}` }),
-      },
-      body: JSON.stringify(
-        useWorker
-          ? { messages: payloadMessages }
-          : {
-              model: CHAT_MODEL,
-              messages: payloadMessages,
-              temperature: 0.6,
-            }
-      ),
-    });
-
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      const errMsg =
-        data.error?.message ||
-        `Request failed (${res.status}). Check your key and network.`;
-      throw new Error(errMsg);
-    }
-
-    const reply = data.choices?.[0]?.message?.content?.trim();
-    if (!reply) {
-      throw new Error("No reply from the model.");
-    }
-
+    const reply = await fetchOpenAICompletion(
+      workerUrl,
+      apiKey,
+      payloadMessages
+    );
     messages.push({ role: "assistant", content: reply });
     appendMessage("assistant", reply);
     persistSession();
@@ -349,16 +380,73 @@ async function sendChatCompletion(workerUrl, apiKey) {
   }
 }
 
+/**
+ * One-shot OpenAI call for a personalized routine; results are appended to the
+ * same chat transcript as user + assistant messages.
+ */
+async function generateRoutineWithOpenAI(requestText) {
+  const { workerUrl, apiKey } = getChatApiConfig();
+  if (!workerUrl && !apiKey) {
+    appendMessage(
+      "assistant",
+      "Set window.CHAT_API_URL in config.js to your Cloudflare Worker URL (recommended), or window.OPENAI_API_KEY there for local-only testing."
+    );
+    return;
+  }
+
+  const displayUserText = `Routine request:\n${requestText}`;
+  const payloadMessages = [
+    { role: "system", content: ROUTINE_SYSTEM_PROMPT },
+    { role: "system", content: buildMemorySystemContent(userName) },
+    { role: "user", content: requestText },
+  ];
+
+  messages.push({ role: "user", content: displayUserText });
+  appendMessage("user", displayUserText);
+
+  const learned = tryLearnNameFromUserText(requestText);
+  if (learned && learned !== userName) {
+    userName = learned;
+    syncMemorySystemMessage();
+  }
+  persistSession();
+
+  const typingEl = showTypingIndicator();
+  setBusy(true);
+
+  try {
+    const reply = await fetchOpenAICompletion(
+      workerUrl,
+      apiKey,
+      payloadMessages
+    );
+    messages.push({ role: "assistant", content: reply });
+    appendMessage("assistant", reply);
+    persistSession();
+  } catch (err) {
+    const msg =
+      err instanceof Error
+        ? err.message
+        : "Something went wrong. If this is a browser CORS block, use a small server proxy instead of calling the API directly from the page.";
+    const shown = `Sorry — ${msg}`;
+    messages.push({ role: "assistant", content: shown });
+    appendMessage("assistant", shown);
+    persistSession();
+  } finally {
+    typingEl.remove();
+    setBusy(false);
+    if (routineInput) routineInput.focus();
+    else userInput.focus();
+  }
+}
+
 chatForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const text = userInput.value.trim();
   if (!text) return;
 
-  const workerUrl =
-    typeof window.CHAT_API_URL === "string" ? window.CHAT_API_URL.trim() : "";
-  const apiKey =
-    typeof window.OPENAI_API_KEY === "string" ? window.OPENAI_API_KEY.trim() : "";
+  const { workerUrl, apiKey } = getChatApiConfig();
 
   if (!workerUrl && !apiKey) {
     appendMessage(
@@ -386,6 +474,17 @@ chatForm.addEventListener("submit", async (e) => {
 if (historyBtn && historyDialog && historyCloseBtn) {
   historyBtn.addEventListener("click", openHistoryDialog);
   historyCloseBtn.addEventListener("click", () => historyDialog.close());
+}
+
+if (routineGenerateBtn && routineInput) {
+  routineGenerateBtn.addEventListener("click", async () => {
+    const requestText = routineInput.value.trim();
+    if (!requestText) {
+      routineInput.focus();
+      return;
+    }
+    await generateRoutineWithOpenAI(requestText);
+  });
 }
 
 const loaded = loadSession();
