@@ -18,88 +18,129 @@
 
   <body>
     <div class="page-wrapper">
-      <!------- Header / Branding ------->
-      <header class="site-header">
-        <div class="brand-lockup">
-          <img
-            class="brand-logo"
-            src="assets/loreal-logo.svg"
-            width="200"
-            height="35"
-            alt="L'Oréal"
-          />
-          <h1 class="site-tagline">Smart Product Advisor</h1>
-        </div>
-      </header>
-
-      <!------- Chat Area ------->
-      <main>
-        <section class="chatbox">
-          <div class="chat-toolbar">
-            <button
-              type="button"
-              id="historyBtn"
-              class="btn-history"
+      <section class="chatbox" aria-label="L'Oréal Smart Product Advisor chat">
+        <header class="chatbox-header">
+          <div class="brand-logo-bar">
+            <svg
+              class="brand-logo"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 320 56"
+              role="img"
+              aria-label="L'Oréal"
             >
-              <span class="material-icons" aria-hidden="true">history</span>
-              Conversation history
-            </button>
+              <title>L'Oréal</title>
+              <text
+                x="0"
+                y="42"
+                fill="#0d0d0d"
+                font-family="Georgia, 'Times New Roman', Times, serif"
+                font-size="40px"
+                font-weight="600"
+                letter-spacing="0.04em"
+              >
+                L'ORÉAL
+              </text>
+            </svg>
           </div>
-
-          <div class="routine-panel" aria-labelledby="routinePanelTitle">
-            <h2 id="routinePanelTitle" class="routine-panel-title">
-              Generate a routine
-            </h2>
-            <p class="routine-panel-hint">
-              Describe your skin or hair type, concerns, and goals — we’ll draft a
-              L’Oréal–aligned step-by-step routine with OpenAI.
-            </p>
-            <label for="routineInput" class="routine-label"
-              >Your request</label
-            >
-            <textarea
-              id="routineInput"
-              class="routine-input"
-              name="routineInput"
-              rows="4"
-              maxlength="2000"
-              placeholder="Example: Combination skin, occasional breakouts, want a simple morning routine with SPF under makeup…"
-            ></textarea>
-            <button type="button" id="routineGenerateBtn" class="btn-routine">
-              <span class="material-icons" aria-hidden="true">auto_awesome</span>
-              Generate routine
-            </button>
-          </div>
-
-          <div id="chatWindow" class="chat-window">
-            <div
-              id="chatMessages"
-              class="chat-messages"
-              role="log"
-              aria-live="polite"
-              aria-relevant="additions"
-            >
-              <!-- user + assistant bubbles appended here via JS -->
+          <div class="chatbox-header-toolbar">
+            <h1 class="site-tagline">Smart Product Advisor</h1>
+            <div class="chatbox-header-actions">
+              <button
+                type="button"
+                id="emailRoutineBtn"
+                class="btn-history"
+                aria-label="Email routine to your address"
+              >
+                <span class="material-icons" aria-hidden="true">email</span>
+                <span class="btn-history-text">Email routine</span>
+              </button>
+              <button
+                type="button"
+                id="textRoutineBtn"
+                class="btn-history"
+                aria-label="Text routine to your phone"
+              >
+                <span class="material-icons" aria-hidden="true">sms</span>
+                <span class="btn-history-text">Text routine</span>
+              </button>
+              <button type="button" id="historyBtn" class="btn-history">
+                <span class="material-icons" aria-hidden="true">history</span>
+                <span class="btn-history-text">History</span>
+              </button>
             </div>
           </div>
+        </header>
 
-          <form id="chatForm" class="chat-form">
-            <label for="userInput" class="visually-hidden">Message</label>
-            <input
-              id="userInput"
-              name="userInput"
-              type="text"
-              placeholder="Ask me about products or routines…"
-              autocomplete="off"
-              required
-            />
-            <button type="submit" id="sendBtn">
-              <span class="material-icons">send</span>
-              <span class="visually-hidden">Send</span>
-            </button>
-          </form>
-        </section>
-      </main>
+        <div class="product-picker">
+          <div class="product-picker-row">
+            <div class="product-picker-copy">
+              <p id="productPickerLabel" class="product-picker-label">Product to discuss</p>
+              <p id="productSelectHint" class="product-picker-hint">
+                Pick a product to drop a starter question into the box — edit or send as-is.
+              </p>
+            </div>
+            <div class="product-picker-menu">
+              <select id="productSelect" class="visually-hidden" tabindex="-1" aria-hidden="true">
+                <option value="">Choose a product…</option>
+              </select>
+              <details id="productPickerDetails" class="product-picker-details">
+                <summary
+                  id="productPickerSummary"
+                  class="product-picker-trigger"
+                  aria-labelledby="productPickerLabel"
+                  aria-describedby="productSelectHint"
+                  aria-controls="productPickerPanel"
+                >
+                  <span class="product-picker-trigger-text">Choose a product…</span>
+                </summary>
+                <div
+                  id="productPickerPanel"
+                  class="product-picker-panel"
+                  role="listbox"
+                  aria-labelledby="productPickerLabel"
+                ></div>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        <div id="chatWindow" class="chat-window">
+          <div
+            id="chatMessages"
+            class="chat-messages"
+            role="log"
+            aria-live="polite"
+            aria-relevant="additions"
+          >
+            <!-- user + assistant bubbles appended here via JS -->
+          </div>
+        </div>
+
+        <form id="chatForm" class="chat-form">
+          <label for="userInput" class="visually-hidden">Message</label>
+          <input
+            id="userInput"
+            name="userInput"
+            type="text"
+            placeholder="Ask about products, routines, or your skin and hair goals…"
+            autocomplete="off"
+            required
+          />
+          <button type="submit" id="sendBtn">
+            <span class="material-icons">send</span>
+            <span class="visually-hidden">Send</span>
+          </button>
+        </form>
+
+        <footer class="chatbox-footer">
+          <p>&copy; 2026 L'Oréal. Student project.</p>
+          <nav>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Use</a>
+            <a href="#">Contact</a>
+          </nav>
+        </footer>
+      </section>
 
       <dialog
         id="historyDialog"
@@ -124,16 +165,102 @@
         </div>
       </dialog>
 
-      <!------- Footer Links ------->
-      <footer class="site-footer">
-        <p>&copy; 2026 L'Oréal. Student project.</p>
-        <nav>
-          <!-- These URLs are placeholders -->
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms of Use</a>
-          <a href="#">Contact</a>
-        </nav>
-      </footer>
+      <dialog
+        id="emailRoutineDialog"
+        class="history-dialog email-routine-dialog"
+        aria-labelledby="emailRoutineDialogTitle"
+      >
+        <div class="history-dialog-panel">
+          <div class="history-dialog-header">
+            <h2 id="emailRoutineDialogTitle" class="history-dialog-title">
+              Email your routine
+            </h2>
+            <button
+              type="button"
+              id="emailRoutineCloseBtn"
+              class="history-dialog-close"
+              aria-label="Close"
+            >
+              <span class="material-icons" aria-hidden="true">close</span>
+            </button>
+          </div>
+          <form id="emailRoutineForm" class="email-routine-dialog-body" novalidate>
+            <p class="email-routine-hint">
+              Enter the address where you want this routine. Your email app will open with the message ready to send to that address (often yourself).
+            </p>
+            <div class="email-routine-field">
+              <label for="emailRoutineAddress">Your email</label>
+              <input
+                id="emailRoutineAddress"
+                name="emailRoutineAddress"
+                type="email"
+                autocomplete="email"
+                inputmode="email"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+            <p id="emailRoutineError" class="email-routine-error" role="alert" hidden></p>
+            <div class="email-routine-actions">
+              <button type="button" id="emailRoutineCancelBtn" class="btn-email-secondary">
+                Cancel
+              </button>
+              <button type="submit" id="emailRoutineSubmitBtn" class="btn-email-primary">
+                Open in email app
+              </button>
+            </div>
+          </form>
+        </div>
+      </dialog>
+
+      <dialog
+        id="textRoutineDialog"
+        class="history-dialog email-routine-dialog"
+        aria-labelledby="textRoutineDialogTitle"
+      >
+        <div class="history-dialog-panel">
+          <div class="history-dialog-header">
+            <h2 id="textRoutineDialogTitle" class="history-dialog-title">
+              Text your routine
+            </h2>
+            <button
+              type="button"
+              id="textRoutineCloseBtn"
+              class="history-dialog-close"
+              aria-label="Close"
+            >
+              <span class="material-icons" aria-hidden="true">close</span>
+            </button>
+          </div>
+          <form id="textRoutineForm" class="email-routine-dialog-body" novalidate>
+            <p class="email-routine-hint">
+              Enter the mobile number where you want this routine. Your messaging app will open with the text ready to send (often to yourself). Works best on a phone; length may be shortened to fit SMS links.
+            </p>
+            <div class="email-routine-field">
+              <label for="textRoutinePhone">Your mobile number</label>
+              <input
+                id="textRoutinePhone"
+                name="textRoutinePhone"
+                type="tel"
+                autocomplete="tel"
+                inputmode="tel"
+                placeholder="+1 (555) 123-4567"
+                required
+              />
+            </div>
+            <p id="textRoutineError" class="email-routine-error" role="alert" hidden></p>
+            <div class="email-routine-actions">
+              <button type="button" id="textRoutineCancelBtn" class="btn-email-secondary">
+                Cancel
+              </button>
+              <button type="submit" id="textRoutineSubmitBtn" class="btn-email-primary">
+                Open in Messages
+              </button>
+            </div>
+          </form>
+        </div>
+      </dialog>
+
     </div>
 
     <script src="config.js"></script>
