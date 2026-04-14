@@ -1,4 +1,4 @@
-# Secrets file containing API keys
+# Optional: local overrides (if you reintroduce a non-tracked secrets file)
 secrets.js
 
 # Local Wrangler secrets (do not commit)

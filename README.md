@@ -20,13 +20,13 @@ L’Oréal is exploring the power of AI, and your job is to showcase what's poss
 
    This uses `RESOURCE_cloudflare-worker.js` as the Worker entry (see `wrangler.toml`).
 
-4. Copy the Worker URL (e.g. `https://loreal-chatbot-api.<your-subdomain>.workers.dev`) into `secrets.js` as:
+4. Copy the Worker URL (e.g. `https://loreal-chatbot-api.<your-subdomain>.workers.dev`) into **`config.js`** (this file is tracked in git so classmates and deployed sites work without a private `secrets` file):
 
    ```js
    window.CHAT_API_URL = "https://loreal-chatbot-api.<your-subdomain>.workers.dev";
    ```
 
-   Leave `OPENAI_API_KEY` unset in the browser when using the Worker so the key stays only in Cloudflare.
+   Leave `OPENAI_API_KEY` empty in `config.js` when using the Worker so the key stays only in Cloudflare.
 
 When calling the Worker, the client sends a JSON body with a `messages` array; the response is handled like the OpenAI API (`data.choices[0].message.content`).
 
