@@ -1220,9 +1220,15 @@ function setBusy(isBusy) {
     if (el instanceof HTMLButtonElement) el.disabled = isBusy;
   }
   for (const el of document.querySelectorAll(
-    ".product-catalog-card, .selected-products-remove, #clearSelectedProductsBtn"
+    ".product-catalog-card-toggle, .selected-products-remove, #clearSelectedProductsBtn"
   )) {
     if (el instanceof HTMLButtonElement) el.disabled = isBusy;
+  }
+  if (productCatalogGridWrap) {
+    productCatalogGridWrap.classList.toggle(
+      "product-catalog-grid-wrap--busy",
+      isBusy
+    );
   }
   if (generateRoutineBtn) {
     generateRoutineBtn.disabled =
@@ -1383,9 +1389,9 @@ function populateProductSelect() {
   syncProductPickerTriggerText();
 }
 
-function updateCatalogCardAria(btn, name) {
+function updateCatalogCardAria(toggleBtn, name) {
   const on = selectedProductsOrder.includes(name);
-  btn.setAttribute(
+  toggleBtn.setAttribute(
     "aria-label",
     on
       ? `${name}. Selected. Click to remove from selection.`
@@ -1394,12 +1400,14 @@ function updateCatalogCardAria(btn, name) {
 }
 
 function syncCatalogCardState(name) {
-  const btn = catalogCardByName.get(name);
-  if (!btn) return;
+  const root = catalogCardByName.get(name);
+  if (!root) return;
+  const toggle = root.querySelector(".product-catalog-card-toggle");
+  if (!(toggle instanceof HTMLButtonElement)) return;
   const on = selectedProductsOrder.includes(name);
-  btn.classList.toggle("product-catalog-card--selected", on);
-  btn.setAttribute("aria-pressed", on ? "true" : "false");
-  updateCatalogCardAria(btn, name);
+  root.classList.toggle("product-catalog-card--selected", on);
+  toggle.setAttribute("aria-pressed", on ? "true" : "false");
+  updateCatalogCardAria(toggle, name);
 }
 
 function renderSelectedProductsSection() {
@@ -1607,6 +1615,7 @@ function bindProductCatalogMarqueeInteractions() {
   if (!track || track.dataset.marqueeClicksBound === "1") return;
   track.dataset.marqueeClicksBound = "1";
   track.addEventListener("click", (e) => {
+    if (e.target.closest("a.product-catalog-card-shop-link")) return;
     const card = e.target.closest(".product-catalog-card[data-product-name]");
     if (card && track.contains(card)) {
       toggleCatalogProduct(card.dataset.productName);
@@ -1658,16 +1667,34 @@ function initProductCatalogGrid() {
     const cell = document.createElement("div");
     cell.className = "product-catalog-cell";
 
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "product-catalog-card";
-    btn.dataset.productName = name;
-    btn.setAttribute("aria-pressed", "false");
+    const root = document.createElement("div");
+    root.className = "product-catalog-card";
+    root.dataset.productName = name;
 
-    const media = document.createElement("span");
-    media.className = "product-catalog-card-media";
+    const shopHref = safeHttpUrlForHref(purchaseUrlForProduct(name));
 
-    if (imageUrl) {
+    if (imageUrl && shopHref) {
+      const shopLink = document.createElement("a");
+      shopLink.className =
+        "product-catalog-card-media product-catalog-card-shop-link";
+      shopLink.href = shopHref;
+      shopLink.target = "_blank";
+      shopLink.rel = "noopener noreferrer";
+      shopLink.setAttribute(
+        "aria-label",
+        `Buy ${name} (opens in new tab)`
+      );
+      const img = document.createElement("img");
+      img.className = "product-catalog-card-img";
+      img.src = imageUrl;
+      img.alt = "";
+      img.loading = "lazy";
+      img.decoding = "async";
+      shopLink.appendChild(img);
+      root.appendChild(shopLink);
+    } else if (imageUrl) {
+      const media = document.createElement("span");
+      media.className = "product-catalog-card-media";
       const img = document.createElement("img");
       img.className = "product-catalog-card-img";
       img.src = imageUrl;
@@ -1675,7 +1702,13 @@ function initProductCatalogGrid() {
       img.loading = "lazy";
       img.decoding = "async";
       media.appendChild(img);
+      root.appendChild(media);
     }
+
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "product-catalog-card-toggle";
+    toggle.setAttribute("aria-pressed", "false");
 
     const cap = document.createElement("span");
     cap.className = "product-catalog-card-cap";
@@ -1685,13 +1718,13 @@ function initProductCatalogGrid() {
     blurb.className = "product-catalog-card-blurb";
     blurb.textContent = description;
 
-    btn.appendChild(media);
-    btn.appendChild(cap);
-    btn.appendChild(blurb);
-    catalogCardByName.set(name, btn);
-    updateCatalogCardAria(btn, name);
+    toggle.appendChild(cap);
+    toggle.appendChild(blurb);
+    root.appendChild(toggle);
+    catalogCardByName.set(name, root);
+    updateCatalogCardAria(toggle, name);
 
-    cell.appendChild(btn);
+    cell.appendChild(root);
     productCatalogGrid.appendChild(cell);
     catalogCellByName.set(name, cell);
   });
