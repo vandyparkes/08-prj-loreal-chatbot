@@ -14,6 +14,11 @@
 
   <body>
     <div class="app-shell">
+      <main
+        id="advisor-main"
+        class="app-main"
+        aria-labelledby="siteTaglineHeading"
+      >
       <div class="page-main">
         <div class="page-main-visual" aria-hidden="true">
           <div class="page-main-visual-grid">
@@ -76,7 +81,11 @@
         </div>
 
         <div class="page-main-content">
-      <section class="chatbox" aria-label="L'Oréal Smart Product Advisor chat">
+      <section
+        class="chatbox"
+        aria-labelledby="siteTaglineHeading"
+        aria-describedby="productBrowserHint chatWebSearchHint"
+      >
         <header class="chatbox-header">
           <div class="brand-logo-bar">
             <span class="brand-logo-ltr" dir="ltr">
@@ -103,7 +112,9 @@
             </span>
           </div>
           <div class="chatbox-header-toolbar">
-            <h1 class="site-tagline">Smart Product Advisor</h1>
+            <h1 id="siteTaglineHeading" class="site-tagline">
+              Smart Product Advisor
+            </h1>
             <div class="chatbox-header-actions">
               <button
                 type="button"
@@ -182,7 +193,7 @@
             <p id="productBrowserHint" class="product-browser-hint">
               Filter by category or search by name or keyword. The product strip scrolls
               automatically; hover over it to pause and tap a card to select or unselect.
-              Use About under a card for a short summary. Your picks appear below — then use
+              Each card shows the full product summary under the name. Your picks appear below — then use
               Generate routine to build a personalized plan from your selection.
             </p>
           </div>
@@ -285,35 +296,65 @@
 
       <aside class="phone-shell" aria-label="Chat messages and reply box">
         <div class="phone-screen">
-          <div id="chatWindow" class="chat-window">
-            <div
-              id="chatMessages"
-              class="chat-messages"
-              role="log"
-              aria-live="polite"
-              aria-relevant="additions"
-            >
-              <!-- user + assistant bubbles appended here via JS -->
+          <article
+            class="chat-session"
+            aria-label="Conversation with the advisor"
+          >
+            <div id="chatWindow" class="chat-window">
+              <div
+                id="chatMessages"
+                class="chat-messages"
+                role="log"
+                aria-live="polite"
+                aria-relevant="additions"
+              >
+                <!-- user + assistant bubbles appended here via JS -->
+              </div>
             </div>
-          </div>
-          <form id="chatForm" class="chat-form">
-            <label for="userInput" class="visually-hidden">Message</label>
-            <input
-              id="userInput"
-              name="userInput"
-              type="text"
-              dir="auto"
-              placeholder="Follow up on your routine, products, or skin and hair goals…"
-              autocomplete="off"
-              required
-            />
-            <button type="submit" id="sendBtn">
-              <span class="material-icons">send</span>
-              <span class="visually-hidden">Send</span>
-            </button>
-          </form>
+            <div
+              class="phone-routine-bar"
+              role="toolbar"
+              aria-label="Send routine to email or text"
+            >
+              <button
+                type="button"
+                id="phoneEmailRoutineBtn"
+                class="btn-history btn-phone-routine"
+                aria-label="Email routine to your address"
+              >
+                <span class="material-icons" aria-hidden="true">email</span>
+                <span class="btn-history-text">Email</span>
+              </button>
+              <button
+                type="button"
+                id="phoneTextRoutineBtn"
+                class="btn-history btn-phone-routine"
+                aria-label="Text routine to your phone"
+              >
+                <span class="material-icons" aria-hidden="true">sms</span>
+                <span class="btn-history-text">Text</span>
+              </button>
+            </div>
+            <form id="chatForm" class="chat-form">
+              <label for="userInput" class="visually-hidden">Message</label>
+              <input
+                id="userInput"
+                name="userInput"
+                type="text"
+                dir="auto"
+                placeholder="Follow up on your routine, products, or skin and hair goals…"
+                autocomplete="off"
+                required
+              />
+              <button type="submit" id="sendBtn">
+                <span class="material-icons">send</span>
+                <span class="visually-hidden">Send</span>
+              </button>
+            </form>
+          </article>
         </div>
       </aside>
+      </main>
 
       <dialog
         id="historyDialog"

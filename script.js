@@ -298,6 +298,8 @@ const chatMessages = document.getElementById("chatMessages");
 const sendBtn = document.getElementById("sendBtn");
 const emailRoutineBtn = document.getElementById("emailRoutineBtn");
 const textRoutineBtn = document.getElementById("textRoutineBtn");
+const phoneEmailRoutineBtn = document.getElementById("phoneEmailRoutineBtn");
+const phoneTextRoutineBtn = document.getElementById("phoneTextRoutineBtn");
 const historyBtn = document.getElementById("historyBtn");
 const historyDialog = document.getElementById("historyDialog");
 const historyDialogBody = document.getElementById("historyDialogBody");
@@ -1019,13 +1021,15 @@ function submitTextRoutineFromDialog() {
 }
 
 function syncEmailRoutineButtonState() {
-  if (!emailRoutineBtn) return;
-  emailRoutineBtn.disabled = !isLatestRoutineSharable();
+  const sharable = isLatestRoutineSharable();
+  if (emailRoutineBtn) emailRoutineBtn.disabled = !sharable;
+  if (phoneEmailRoutineBtn) phoneEmailRoutineBtn.disabled = !sharable;
 }
 
 function syncTextRoutineButtonState() {
-  if (!textRoutineBtn) return;
-  textRoutineBtn.disabled = !isLatestRoutineSharable();
+  const sharable = isLatestRoutineSharable();
+  if (textRoutineBtn) textRoutineBtn.disabled = !sharable;
+  if (phoneTextRoutineBtn) phoneTextRoutineBtn.disabled = !sharable;
 }
 
 function syncRoutineShareButtonsState() {
@@ -1216,7 +1220,7 @@ function setBusy(isBusy) {
     if (el instanceof HTMLButtonElement) el.disabled = isBusy;
   }
   for (const el of document.querySelectorAll(
-    ".product-catalog-card, .product-catalog-desc-toggle, .selected-products-remove, #clearSelectedProductsBtn"
+    ".product-catalog-card, .selected-products-remove, #clearSelectedProductsBtn"
   )) {
     if (el instanceof HTMLButtonElement) el.disabled = isBusy;
   }
@@ -1231,6 +1235,8 @@ function setBusy(isBusy) {
   if (isBusy) {
     if (emailRoutineBtn) emailRoutineBtn.disabled = true;
     if (textRoutineBtn) textRoutineBtn.disabled = true;
+    if (phoneEmailRoutineBtn) phoneEmailRoutineBtn.disabled = true;
+    if (phoneTextRoutineBtn) phoneTextRoutineBtn.disabled = true;
   } else {
     syncRoutineShareButtonsState();
   }
@@ -1471,59 +1477,6 @@ function clearAllSelectedProducts() {
   persistSelectedProducts();
 }
 
-function productNameForDescToggle(toggle) {
-  const n = toggle
-    .closest(".product-catalog-cell")
-    ?.querySelector(".product-catalog-card")?.dataset.productName;
-  return n || "product";
-}
-
-function setProductDescToggleCollapsed(toggle) {
-  const id = toggle.getAttribute("aria-controls");
-  const pnl = id ? document.getElementById(id) : null;
-  if (pnl && document.activeElement === pnl) {
-    toggle.focus();
-  }
-  toggle.setAttribute("aria-expanded", "false");
-  if (pnl) pnl.hidden = true;
-  toggle.setAttribute(
-    "aria-label",
-    `About ${productNameForDescToggle(toggle)}. Collapsed. Opens a short summary below.`
-  );
-}
-
-function setProductDescToggleExpanded(toggle, catalogName) {
-  toggle.setAttribute("aria-expanded", "true");
-  const id = toggle.getAttribute("aria-controls");
-  const pnl = id ? document.getElementById(id) : null;
-  if (pnl) {
-    pnl.hidden = false;
-    requestAnimationFrame(() => {
-      try {
-        pnl.focus({ preventScroll: true });
-      } catch {
-        pnl.focus();
-      }
-    });
-  }
-  toggle.setAttribute(
-    "aria-label",
-    `${catalogName}. Short summary shown below. Press About again to hide.`
-  );
-}
-
-function productCatalogMarqueeRoot() {
-  return productCatalogMarqueeTrack || productCatalogGrid;
-}
-
-function collapseAllProductDescriptionPanels() {
-  const root = productCatalogMarqueeRoot();
-  if (!root) return;
-  for (const t of root.querySelectorAll(".product-catalog-desc-toggle")) {
-    setProductDescToggleCollapsed(t);
-  }
-}
-
 function syncCatalogCategoryButtons() {
   if (!productCatalogCategoryGroup) return;
   for (const btn of productCatalogCategoryGroup.querySelectorAll(
@@ -1654,30 +1607,8 @@ function bindProductCatalogMarqueeInteractions() {
   if (!track || track.dataset.marqueeClicksBound === "1") return;
   track.dataset.marqueeClicksBound = "1";
   track.addEventListener("click", (e) => {
-    const descToggle = e.target.closest(".product-catalog-desc-toggle");
-    if (descToggle && track.contains(descToggle)) {
-      e.stopPropagation();
-      const cell = descToggle.closest(".product-catalog-cell");
-      const card = cell?.querySelector(".product-catalog-card[data-product-name]");
-      const name = card?.dataset.productName;
-      if (!name) return;
-      const wasOpen = descToggle.getAttribute("aria-expanded") === "true";
-      if (!wasOpen) {
-        for (const other of track.querySelectorAll(".product-catalog-desc-toggle")) {
-          if (other !== descToggle) setProductDescToggleCollapsed(other);
-        }
-        setProductDescToggleExpanded(descToggle, name);
-      } else {
-        setProductDescToggleCollapsed(descToggle);
-      }
-      return;
-    }
     const card = e.target.closest(".product-catalog-card[data-product-name]");
-    if (
-      card &&
-      track.contains(card) &&
-      !e.target.closest(".product-catalog-desc-toggle")
-    ) {
+    if (card && track.contains(card)) {
       toggleCatalogProduct(card.dataset.productName);
     }
   });
@@ -1718,7 +1649,7 @@ function initProductCatalogGrid() {
   catalogCardByName.clear();
   catalogCellByName.clear();
 
-  PRODUCT_CATALOG.forEach((name, idx) => {
+  PRODUCT_CATALOG.forEach((name) => {
     const imageUrl = PRODUCT_IMAGE_MAP[name];
     const description =
       PRODUCT_DESCRIPTION_MAP[name] ||
@@ -1750,52 +1681,19 @@ function initProductCatalogGrid() {
     cap.className = "product-catalog-card-cap";
     cap.textContent = name;
 
+    const blurb = document.createElement("span");
+    blurb.className = "product-catalog-card-blurb";
+    blurb.textContent = description;
+
     btn.appendChild(media);
     btn.appendChild(cap);
+    btn.appendChild(blurb);
     catalogCardByName.set(name, btn);
     updateCatalogCardAria(btn, name);
 
-    const descPanelId = `productCatalogDesc${idx}`;
-    const descToggleId = `productCatalogDescToggle${idx}`;
-
-    const descToggle = document.createElement("button");
-    descToggle.type = "button";
-    descToggle.className = "product-catalog-desc-toggle";
-    descToggle.id = descToggleId;
-    descToggle.setAttribute("aria-controls", descPanelId);
-
-    const icon = document.createElement("span");
-    icon.className = "material-icons product-catalog-desc-toggle-icon";
-    icon.setAttribute("aria-hidden", "true");
-    icon.textContent = "info_outline";
-
-    const toggleLabel = document.createElement("span");
-    toggleLabel.className = "product-catalog-desc-toggle-text";
-    toggleLabel.textContent = "About";
-
-    descToggle.appendChild(icon);
-    descToggle.appendChild(toggleLabel);
-
-    const descPanel = document.createElement("div");
-    descPanel.id = descPanelId;
-    descPanel.className = "product-catalog-desc-panel";
-    descPanel.setAttribute("role", "region");
-    descPanel.setAttribute("aria-labelledby", descToggleId);
-    descPanel.tabIndex = -1;
-    descPanel.hidden = true;
-
-    const descText = document.createElement("p");
-    descText.className = "product-catalog-desc-text";
-    descText.textContent = description;
-
-    descPanel.appendChild(descText);
-
     cell.appendChild(btn);
-    cell.appendChild(descToggle);
-    cell.appendChild(descPanel);
     productCatalogGrid.appendChild(cell);
     catalogCellByName.set(name, cell);
-    setProductDescToggleCollapsed(descToggle);
   });
 
   for (const name of selectedProductsOrder) {
@@ -1804,15 +1702,6 @@ function initProductCatalogGrid() {
   renderSelectedProductsSection();
   applyProductCatalogFilters();
 }
-
-document.addEventListener("keydown", (e) => {
-  if (e.key !== "Escape") return;
-  const root = productCatalogMarqueeRoot();
-  if (!root?.querySelector('.product-catalog-desc-toggle[aria-expanded="true"]')) {
-    return;
-  }
-  collapseAllProductDescriptionPanels();
-});
 
 function getChatApiConfig() {
   const workerUrl =
@@ -2099,6 +1988,18 @@ if (emailRoutineDialog) {
 
 if (textRoutineBtn) {
   textRoutineBtn.addEventListener("click", () => {
+    openTextRoutineDialog();
+  });
+}
+
+if (phoneEmailRoutineBtn) {
+  phoneEmailRoutineBtn.addEventListener("click", () => {
+    openEmailRoutineDialog();
+  });
+}
+
+if (phoneTextRoutineBtn) {
+  phoneTextRoutineBtn.addEventListener("click", () => {
     openTextRoutineDialog();
   });
 }

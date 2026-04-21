@@ -49,6 +49,12 @@ body {
   isolation: isolate;
 }
 
+/* Single <main> landmark wraps catalog workspace + complementary chat aside */
+.app-main {
+  position: relative;
+  min-height: 100dvh;
+}
+
 .page-main {
   position: relative;
   z-index: 1;
@@ -106,6 +112,7 @@ body {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
+  align-items: center;
   min-height: 0;
   overflow: hidden;
 }
@@ -165,11 +172,47 @@ body {
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
 }
 
+/* Semantic wrapper for thread + composer inside the phone shell */
+.phone-screen .chat-session {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 .phone-shell .chat-window {
   flex: 1;
   min-height: 0;
   height: auto;
   border-radius: 0;
+}
+
+.phone-routine-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 8px;
+  padding: 8px 10px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--loreal-border);
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.phone-routine-bar .btn-phone-routine {
+  flex: 1 1 0;
+  justify-content: center;
+  min-width: 0;
+  padding: 7px 8px;
+  font-size: 11px;
+}
+
+.phone-routine-bar .btn-phone-routine .material-icons {
+  font-size: 18px;
+}
+
+/* Phone frame is often under 400px wide; still show short labels here */
+.phone-routine-bar .btn-history-text {
+  display: inline;
 }
 
 .phone-shell .chat-form {
@@ -218,7 +261,7 @@ body {
 .chatbox {
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: min(100%, 1180px);
   flex: 1 1 0;
   min-height: 0;
   max-height: none;
@@ -1249,83 +1292,6 @@ body {
   min-width: 0;
 }
 
-.product-catalog-desc-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  margin: 0;
-  padding: 4px 6px;
-  border: 1px solid var(--loreal-border);
-  border-radius: 6px;
-  background: #f4f4f4;
-  font: inherit;
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--loreal-charcoal);
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.product-catalog-desc-toggle:hover {
-  background: #ececec;
-  border-color: #c8c8c8;
-}
-
-.product-catalog-desc-toggle:focus {
-  outline: none;
-}
-
-.product-catalog-desc-toggle:focus-visible {
-  border-color: var(--loreal-red);
-  box-shadow: 0 0 0 2px var(--loreal-red-focus);
-}
-
-.product-catalog-desc-toggle[aria-expanded="true"] {
-  background: #fff8f8;
-  border-color: #e8b4b8;
-}
-
-.product-catalog-desc-toggle-icon {
-  font-size: 14px !important;
-  line-height: 1 !important;
-  color: var(--loreal-muted);
-}
-
-.product-catalog-desc-toggle[aria-expanded="true"] .product-catalog-desc-toggle-icon {
-  color: var(--loreal-red);
-}
-
-.product-catalog-desc-toggle:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.product-catalog-desc-panel {
-  font-size: 10px;
-  line-height: 1.45;
-  color: var(--loreal-charcoal);
-  padding: 8px 9px;
-  background: var(--loreal-white);
-  border-radius: 8px;
-  border: 1px solid var(--loreal-border);
-  max-height: 112px;
-  overflow-y: auto;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-.product-catalog-desc-panel:focus {
-  outline: none;
-}
-
-.product-catalog-desc-panel:focus-visible {
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 0 0 2px var(--loreal-red-focus);
-}
-
-.product-catalog-desc-text {
-  margin: 0;
-}
-
 .product-catalog-card {
   display: flex;
   flex-direction: column;
@@ -1390,13 +1356,24 @@ body {
 
 .product-catalog-card-cap {
   display: block;
-  padding: 6px 8px 8px;
+  padding: 6px 8px 4px;
   font-size: 9px;
   font-weight: 600;
   line-height: 1.3;
   color: var(--loreal-charcoal);
   border-top: 1px solid var(--loreal-border);
   min-height: 2.8em;
+}
+
+.product-catalog-card-blurb {
+  display: block;
+  padding: 0 8px 8px;
+  margin: 0;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--loreal-muted);
+  text-align: start;
 }
 
 .product-catalog-card:disabled {
@@ -1641,6 +1618,11 @@ body {
 /* Send icon points along inline progression */
 [dir="rtl"] .chat-form button[type="submit"] .material-icons {
   transform: scaleX(-1);
+}
+
+/* RTL: keep catalog search icon on the trailing (inline-end) side of the field */
+[dir="rtl"] .product-catalog-search-field {
+  flex-direction: row-reverse;
 }
 
 .chat-form button:hover {
