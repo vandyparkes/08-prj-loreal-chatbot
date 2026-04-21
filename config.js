@@ -5,7 +5,7 @@
 //
 // Optional: for local testing without a Worker, set OPENAI_API_KEY here — do not commit real keys.
 //
-// CHAT_API_URL must be THIS project’s Cloudflare Worker (OpenAI chat completions proxy):
+// CHAT_API_URL must be THIS project’s Cloudflare Worker (OpenAI chat completions proxy with web search):
 //   RESOURCE_cloudflare-worker.js — see wrangler.toml. Deploy: npm run worker:deploy
 // Then paste the workers.dev URL Wrangler prints (not another Worker on workers.dev).
 window.CHAT_API_URL = "https://silent-base-b242.vparkes.workers.dev";
@@ -16,3 +16,8 @@ window.ROUTINE_EMAIL_TO = "";
 
 // Optional: default number shown in the "Text routine" dialog (digits or +country…). Leave "" for last-used number from this browser only, or an empty field.
 window.ROUTINE_SMS_PHONE = "";
+
+// Page layout direction: "ltr", "rtl", or omit. When set here, it overrides the
+// in-app layout toggle and locale default. Otherwise: session toggle, then
+// browser language (ar, he, fa, ur → rtl).
+// window.APP_DIR = "rtl";

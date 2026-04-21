@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,34 +13,107 @@
   </head>
 
   <body>
-    <div class="page-wrapper">
+    <div class="app-shell">
+      <div class="page-main">
+        <div class="page-main-visual" aria-hidden="true">
+          <div class="page-main-visual-grid">
+            <img
+              class="page-main-visual-img"
+              src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&amp;fit=crop&amp;w=900&amp;q=80"
+              alt=""
+              width="900"
+              height="1200"
+              loading="eager"
+              decoding="async"
+            />
+            <img
+              class="page-main-visual-img"
+              src="https://images.unsplash.com/photo-1522338242992-e1a54906a8da?auto=format&amp;fit=crop&amp;w=900&amp;q=80"
+              alt=""
+              width="900"
+              height="1200"
+              loading="lazy"
+              decoding="async"
+            />
+            <img
+              class="page-main-visual-img"
+              src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&amp;fit=crop&amp;w=900&amp;q=80"
+              alt=""
+              width="900"
+              height="1200"
+              loading="lazy"
+              decoding="async"
+            />
+            <img
+              class="page-main-visual-img"
+              src="https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&amp;fit=crop&amp;w=900&amp;q=80"
+              alt=""
+              width="900"
+              height="1200"
+              loading="lazy"
+              decoding="async"
+            />
+            <img
+              class="page-main-visual-img"
+              src="https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&amp;fit=crop&amp;w=900&amp;q=80"
+              alt=""
+              width="900"
+              height="1200"
+              loading="lazy"
+              decoding="async"
+            />
+            <img
+              class="page-main-visual-img"
+              src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&amp;fit=crop&amp;w=900&amp;q=80"
+              alt=""
+              width="900"
+              height="1200"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <div class="page-main-visual-scrim"></div>
+        </div>
+
+        <div class="page-main-content">
       <section class="chatbox" aria-label="L'Oréal Smart Product Advisor chat">
         <header class="chatbox-header">
           <div class="brand-logo-bar">
-            <svg
-              class="brand-logo"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 320 56"
-              role="img"
-              aria-label="L'Oréal"
-            >
-              <title>L'Oréal</title>
-              <text
-                x="0"
-                y="42"
-                fill="#0d0d0d"
-                font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
-                font-size="40px"
-                font-weight="700"
-                letter-spacing="0.04em"
+            <span class="brand-logo-ltr" dir="ltr">
+              <svg
+                class="brand-logo"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 320 56"
+                role="img"
+                aria-label="L'Oréal"
               >
-                L'ORÉAL
-              </text>
-            </svg>
+                <title>L'Oréal</title>
+                <text
+                  x="0"
+                  y="42"
+                  fill="#0d0d0d"
+                  font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+                  font-size="40px"
+                  font-weight="700"
+                  letter-spacing="0.04em"
+                >
+                  L'ORÉAL
+                </text>
+              </svg>
+            </span>
           </div>
           <div class="chatbox-header-toolbar">
             <h1 class="site-tagline">Smart Product Advisor</h1>
             <div class="chatbox-header-actions">
+              <button
+                type="button"
+                id="layoutDirToggleBtn"
+                class="btn-history btn-layout-dir"
+                aria-pressed="false"
+                aria-label="Switch layout to right-to-left"
+              >
+                <span class="material-icons layout-dir-icon" aria-hidden="true">format_textdirection_r_to_l</span>
+              </button>
               <button
                 type="button"
                 id="emailRoutineBtn"
@@ -72,7 +145,7 @@
             <div class="product-picker-copy">
               <p id="productPickerLabel" class="product-picker-label">Product to discuss</p>
               <p id="productSelectHint" class="product-picker-hint">
-                Pick a product to drop a starter question into the box — edit or send as-is.
+                Pick a product to drop a starter question into the reply box on the phone — edit or send as-is.
               </p>
             </div>
             <div class="product-picker-menu">
@@ -100,33 +173,103 @@
           </div>
         </div>
 
-        <div id="chatWindow" class="chat-window">
-          <div
-            id="chatMessages"
-            class="chat-messages"
-            role="log"
-            aria-live="polite"
-            aria-relevant="additions"
-          >
-            <!-- user + assistant bubbles appended here via JS -->
+        <section
+          class="product-browser"
+          aria-label="Product catalog and your selection"
+        >
+          <div class="product-browser-intro">
+            <p class="product-browser-label">Browse products</p>
+            <p id="productBrowserHint" class="product-browser-hint">
+              Filter by category or search by name or keyword. The product strip scrolls
+              automatically; hover over it to pause and tap a card to select or unselect.
+              Use About under a card for a short summary. Your picks appear below — then use
+              Generate routine to build a personalized plan from your selection.
+            </p>
           </div>
-        </div>
+          <div class="product-catalog-toolbar" role="search">
+            <label for="productCatalogSearch" class="product-catalog-search-label"
+              >Search</label>
+            <div class="product-catalog-search-field">
+              <span
+                class="material-icons product-catalog-search-icon"
+                aria-hidden="true"
+                >search</span>
+              <input
+                type="search"
+                id="productCatalogSearch"
+                class="product-catalog-search-input"
+                dir="auto"
+                placeholder="Name or keyword…"
+                autocomplete="off"
+                aria-describedby="productBrowserHint"
+              />
+            </div>
+            <div
+              id="productCatalogCategoryGroup"
+              class="product-catalog-categories"
+              role="group"
+              aria-label="Filter by category"
+            ></div>
+          </div>
+          <div class="product-catalog-grid-wrap">
+            <div class="product-catalog-marquee-viewport">
+              <div
+                id="productCatalogMarqueeTrack"
+                class="product-catalog-marquee-track"
+              >
+                <div
+                  id="productCatalogGrid"
+                  class="product-catalog-grid"
+                  role="group"
+                  aria-describedby="productBrowserHint"
+                ></div>
+                <div
+                  class="product-catalog-grid product-catalog-grid--marquee-mirror"
+                  aria-hidden="true"
+                ></div>
+              </div>
+            </div>
+            <p id="productCatalogEmpty" class="product-catalog-empty" role="status" hidden>
+              No products match your search and category filters.
+            </p>
+          </div>
+          <div class="selected-products" aria-live="polite">
+            <h2 class="selected-products-title">Selected products</h2>
+            <p id="selectedProductsEmpty" class="selected-products-empty">
+              None selected yet.
+            </p>
+            <ul
+              id="selectedProductsList"
+              class="selected-products-list"
+              hidden
+            ></ul>
+            <div class="selected-products-actions">
+              <button
+                type="button"
+                id="clearSelectedProductsBtn"
+                class="btn-clear-selected-products"
+                hidden
+                aria-label="Clear all selected products"
+              >
+                Clear all
+              </button>
+              <button
+                type="button"
+                id="generateRoutineBtn"
+                class="btn-generate-routine"
+                aria-describedby="productBrowserHint"
+              >
+                <span class="material-icons" aria-hidden="true">auto_awesome</span>
+                <span>Generate routine</span>
+              </button>
+            </div>
+          </div>
+        </section>
 
-        <form id="chatForm" class="chat-form">
-          <label for="userInput" class="visually-hidden">Message</label>
-          <input
-            id="userInput"
-            name="userInput"
-            type="text"
-            placeholder="Ask about products, routines, or your skin and hair goals…"
-            autocomplete="off"
-            required
-          />
-          <button type="submit" id="sendBtn">
-            <span class="material-icons">send</span>
-            <span class="visually-hidden">Send</span>
-          </button>
-        </form>
+        <p id="chatWebSearchHint" class="chat-web-search-hint">
+          The advisor can search the web for current L'Oréal product news and pages; when it does,
+          source links appear under the reply.
+        </p>
 
         <footer class="chatbox-footer">
           <p>&copy; 2026 L'Oréal. Student project.</p>
@@ -137,6 +280,40 @@
           </nav>
         </footer>
       </section>
+        </div>
+      </div>
+
+      <aside class="phone-shell" aria-label="Chat messages and reply box">
+        <div class="phone-screen">
+          <div id="chatWindow" class="chat-window">
+            <div
+              id="chatMessages"
+              class="chat-messages"
+              role="log"
+              aria-live="polite"
+              aria-relevant="additions"
+            >
+              <!-- user + assistant bubbles appended here via JS -->
+            </div>
+          </div>
+          <form id="chatForm" class="chat-form">
+            <label for="userInput" class="visually-hidden">Message</label>
+            <input
+              id="userInput"
+              name="userInput"
+              type="text"
+              dir="auto"
+              placeholder="Follow up on your routine, products, or skin and hair goals…"
+              autocomplete="off"
+              required
+            />
+            <button type="submit" id="sendBtn">
+              <span class="material-icons">send</span>
+              <span class="visually-hidden">Send</span>
+            </button>
+          </form>
+        </div>
+      </aside>
 
       <dialog
         id="historyDialog"
@@ -190,6 +367,7 @@
                 id="emailRoutineAddress"
                 name="emailRoutineAddress"
                 type="email"
+                dir="ltr"
                 autocomplete="email"
                 inputmode="email"
                 placeholder="you@example.com"
@@ -238,6 +416,7 @@
                 id="textRoutinePhone"
                 name="textRoutinePhone"
                 type="tel"
+                dir="ltr"
                 autocomplete="tel"
                 inputmode="tel"
                 placeholder="+1 (555) 123-4567"

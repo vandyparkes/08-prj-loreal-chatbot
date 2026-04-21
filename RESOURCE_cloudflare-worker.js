@@ -1,5 +1,7 @@
 /**
  * L'Oréal chatbot — Cloudflare Worker proxy for OpenAI (keeps the API key off the static site).
+ * Uses `gpt-4o-mini-search-preview` so the model can run live web search; responses may include
+ * `annotations` (url citations) that the client renders as “Web sources”.
  *
  * Required secret (Workers → Settings → Variables and Secrets):
  *   OPENAI_API_KEY
@@ -14,11 +16,12 @@
  */
 
 const OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions";
-const CHAT_MODEL = "gpt-4o-mini";
+/** Chat Completions model with built-in web search (see OpenAI “Web search” guide). */
+const CHAT_MODEL = "gpt-4o-mini-search-preview";
 const CHAT_TEMPERATURE = 0.6;
 const MAX_COMPLETION_TOKENS = 2048;
 
-/** Must cover client system messages + transcript cap (see script.js MAX_TRANSCRIPT_MESSAGES). */
+/** Must cover client payload: 2 system lines + MAX_TRANSCRIPT_MESSAGES (see script.js). */
 const MAX_MESSAGES = 48;
 const MAX_MESSAGE_CHARS = 20000;
 const MAX_JSON_BYTES = 400_000;
@@ -144,7 +147,7 @@ async function handleRequest(request, env) {
       const body = {
         ok: true,
         service: "loreal-chatbot-api",
-        hint: "POST JSON { messages: [...] } for chat completions.",
+        hint: "POST JSON { messages: [...] } for chat completions (web search enabled; see annotations on assistant messages).",
       };
       return jsonResponse(cors, 200, body);
     }
@@ -215,6 +218,9 @@ async function handleRequest(request, env) {
         messages: checked.messages,
         temperature: CHAT_TEMPERATURE,
         max_completion_tokens: MAX_COMPLETION_TOKENS,
+        web_search_options: {
+          search_context_size: "medium",
+        },
       }),
     });
 
